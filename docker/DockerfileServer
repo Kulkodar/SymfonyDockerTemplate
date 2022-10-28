@@ -1,0 +1,11 @@
+FROM php:8-fpm-alpine
+
+# installs composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Install postgres libs
+RUN apk update && apk --no-cache add postgresql-dev
+RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install pgsql pdo_pgsql
+
+WORKDIR /app

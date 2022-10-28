@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+ server:
+  build:
+    context: ./docker
+    dockerfile: DockerfileServer
+  container_name: server
+  volumes:
+    - .:/app
+  depends_on:
+    - database
+
+ nginx:
+  image: nginx:alpine
+  container_name: nginx
+  depends_on:
+    - server
+  volumes:
+   - ./docker/nginx/:/etc/nginx/conf.d/
+   - ./public:/app/public # needed for fastcgi_pass
+  ports:
+    - target: 80
+      published: 80
+      protocol: tcp
+    - target: 443
+      published: 443
+      protocol: tcp
+
+ database:
+   image: postgres:${POSTGRES_VERSION:-14}-alpine
+   container_name: database
+   environment:
+     POSTGRES_DB: ${POSTGRES_DB:-app}
+     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+     POSTGRES_USER: ${POSTGRES_USER:-app}
+   volumes:
+     - ./docker/db/:/var/lib/postgresql/data:rw
